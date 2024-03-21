@@ -152,7 +152,7 @@ def root(
 
 @app.post("/v1/audio/transcriptions")
 async def create_transcription(
-    file: os.PathLike,
+    file: UploadFile = File(...),
     model: str = "whisper-1",
     language: str = None,
     prompt: str = None,
@@ -172,9 +172,8 @@ async def create_transcription(
         )
 
     try:
-        filename = os.path.basename(file)
         url = f"https://drive.google.com/uc?id={prompt}"
-        file = gdown.download(url, filename)
+        file = gdown.download(url, "t.wav")
 
         # if not os.path.isfile(audio_path):
         #     raise HTTPException(status_code=400, detail="Audio file not found.")
