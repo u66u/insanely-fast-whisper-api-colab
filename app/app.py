@@ -153,7 +153,7 @@ def root(
 @app.post("/v1/audio/transcriptions")
 async def create_transcription(
     prompt: str,
-    file: bytes,
+    file,
     model: str = "whisper-1",
     language: str = None,
     response_format: str = "json",
