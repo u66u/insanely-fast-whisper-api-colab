@@ -173,10 +173,7 @@ async def create_transcription(
 
     try:
         url = f"https://drive.google.com/uc?id={prompt}"
-        file = gdown.download(url, "t.wav")
-
-        # if not os.path.isfile(audio_path):
-        #     raise HTTPException(status_code=400, detail="Audio file not found.")
+        gdown.download(url, "t.wav")
 
         with open("t.wav", "rb") as audio_file:
             audio_bytes = audio_file.read()
