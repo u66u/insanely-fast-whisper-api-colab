@@ -1,11 +1,16 @@
 import os
+import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Body, BackgroundTasks
 from pydantic import BaseModel
 import torch
 from transformers import pipeline
 from .diarization_pipeline import diarize
 import requests
+from pyngrok import ngrok
+from google.colab import drive
 
+
+drive.mount("/content/drive")
 
 admin_key = os.environ.get(
     "ADMIN_KEY",
@@ -14,6 +19,9 @@ admin_key = os.environ.get(
 hf_token = os.environ.get(
     "HF_TOKEN",
 )
+
+mic_file = "/content/drive/My Drive/mic.wav"
+speaker_file = "/content/drive/My Drive/speaker.wav"
 
 pipe = pipeline(
     "automatic-speech-recognition",
@@ -114,6 +122,7 @@ def root(
             status_code=400, detail="Webhook is required for async tasks"
         )
 
+    url = mic_file
     try:
         if is_async is True:
             background_tasks.add_task(
@@ -143,3 +152,12 @@ def root(
         return {"output": outputs, "status": "completed"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == "__main__":
+    ngrok.kill()
+
+    public_url = ngrok.connect(8000)
+    print(f"Public URL: {public_url}")
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
