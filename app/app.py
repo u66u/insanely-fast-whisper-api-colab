@@ -178,7 +178,7 @@ async def create_transcription(
         # if not os.path.isfile(audio_path):
         #     raise HTTPException(status_code=400, detail="Audio file not found.")
 
-        with open(file, "rb") as audio_file:
+        with open("t.wav", "rb") as audio_file:
             audio_bytes = audio_file.read()
 
         result = pipe(
