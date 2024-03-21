@@ -159,7 +159,7 @@ def root(
 
 @app.post("/v1/audio/transcriptions")
 async def create_transcription(
-    file: UploadFile = File(...),
+    file: str,
     model: str = "whisper-1",
     language: str = None,
     prompt: str = None,
@@ -167,11 +167,6 @@ async def create_transcription(
     temperature: float = 0.0,
     timestamp_granularities: list = ["segment"],
 ):
-    if model != "whisper-1":
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid model specified. Only 'whisper-1' is currently supported.",
-        )
 
     if response_format not in ["json", "text", "srt", "verbose_json", "vtt"]:
         raise HTTPException(
@@ -184,13 +179,23 @@ async def create_transcription(
         )
 
     try:
-        audio_bytes = await file.read()
+        audio_path = f"/content/drive/My Drive/{file}"
+
+        if not os.path.isfile(audio_path):
+            raise HTTPException(status_code=400, detail="Audio file not found.")
+
+        with open(audio_path, "rb") as audio_file:
+            audio_bytes = audio_file.read()
+
         result = pipe(
             audio_bytes,
             chunk_length_s=30,
         )
-        transcript = result["text"]
-        return transcript
+
+        if response_format == "json":
+            return result
+        elif response_format == "text":
+            return result["text"]
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
