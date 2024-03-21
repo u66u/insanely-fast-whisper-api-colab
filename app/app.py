@@ -172,8 +172,7 @@ async def create_transcription(
         )
 
     try:
-        url = f"https://drive.google.com/file/d/{prompt}/view?usp=sharing"
-        print(url)
+        url = f"https://drive.google.com/uc?id={prompt}"
         gdown.download(url, "t.wav")
 
         # with open("t.wav", "rb") as audio_file:
