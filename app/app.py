@@ -155,7 +155,7 @@ async def create_transcription(
     file: UploadFile = File(...),
     model: str = "whisper-1",
     language: str = None,
-    prompt: str = None,
+    prompt: str,
     response_format: str = "json",
     temperature: float = 0.0,
     timestamp_granularities: list = ["segment"],
@@ -174,6 +174,7 @@ async def create_transcription(
     try:
         url = f"https://drive.google.com/uc?id={prompt}"
         gdown.download(url, "t.wav")
+        print(url)
 
         # with open("t.wav", "rb") as audio_file:
         #     audio_bytes = audio_file.read()
