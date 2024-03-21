@@ -12,20 +12,13 @@ from fastapi import (
 from pydantic import BaseModel
 import torch
 from transformers import pipeline
+from pathlib import Path
 from .diarization_pipeline import diarize
 import requests
-
-
-admin_key = os.environ.get(
-    "ADMIN_KEY",
-)
 
 hf_token = os.environ.get(
     "HF_TOKEN",
 )
-
-mic_file = "/content/drive/My Drive/mic.wav"
-speaker_file = "/content/drive/My Drive/speaker.wav"
 
 pipe = pipeline(
     "automatic-speech-recognition",
@@ -159,7 +152,7 @@ def root(
 
 @app.post("/v1/audio/transcriptions")
 async def create_transcription(
-    file: str,
+    file: os.PathLike,
     model: str = "whisper-1",
     language: str = None,
     prompt: str = None,
@@ -179,7 +172,8 @@ async def create_transcription(
         )
 
     try:
-        audio_path = f"/content/drive/My Drive/{file}"
+        filename = os.path.basename(file)
+        audio_path = f"/content/drive/My Drive/transcribe/{filename}"
 
         if not os.path.isfile(audio_path):
             raise HTTPException(status_code=400, detail="Audio file not found.")
