@@ -175,11 +175,11 @@ async def create_transcription(
         url = f"https://drive.google.com/uc?id={prompt}"
         gdown.download(url, "t.wav")
 
-        with open("t.wav", "rb") as audio_file:
-            audio_bytes = audio_file.read()
+        # with open("t.wav", "rb") as audio_file:
+        #     audio_bytes = audio_file.read()
 
         result = pipe(
-            audio_bytes,
+            "t.wav",
             chunk_length_s=30,
         )
 
