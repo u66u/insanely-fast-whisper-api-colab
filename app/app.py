@@ -1,15 +1,20 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Body, BackgroundTasks, UploadFile
+from fastapi import (
+    FastAPI,
+    Header,
+    HTTPException,
+    Body,
+    BackgroundTasks,
+    UploadFile,
+    File,
+)
 from pydantic import BaseModel
 import torch
 from transformers import pipeline
 from .diarization_pipeline import diarize
 import requests
-from google.colab import drive
 
-
-drive.mount("/content/drive")
 
 admin_key = os.environ.get(
     "ADMIN_KEY",
@@ -180,7 +185,10 @@ async def create_transcription(
 
     try:
         audio_bytes = await file.read()
-        result = pipe(audio_bytes, language=language, prompt=prompt)
+        result = pipe(
+            audio_bytes,
+            chunk_length_s=30,
+        )
         transcript = result["text"]
         return transcript
 
