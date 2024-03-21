@@ -160,6 +160,7 @@ async def create_transcription(
     temperature: float = 0.0,
     timestamp_granularities: list = ["segment"],
 ):
+    print(prompt)
 
     if response_format not in ["json", "text", "srt", "verbose_json", "vtt"]:
         raise HTTPException(
