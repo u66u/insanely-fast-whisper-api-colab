@@ -1,12 +1,11 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Body, BackgroundTasks
+from fastapi import FastAPI, Header, HTTPException, Body, BackgroundTasks, UploadFile
 from pydantic import BaseModel
 import torch
 from transformers import pipeline
 from .diarization_pipeline import diarize
 import requests
-from pyngrok import ngrok
 from google.colab import drive
 
 
@@ -28,16 +27,9 @@ pipe = pipeline(
     model="openai/whisper-large-v3",
     torch_dtype=torch.float16,
     device="cuda:0",
-    model_kwargs=({"attn_implementation": "flash_attention_2"}),
 )
 
 app = FastAPI()
-
-
-ngrok.kill()
-
-public_url = ngrok.connect(8000)
-print(f"Public URL: {public_url}")
 
 
 class WebhookBody(BaseModel):
@@ -160,6 +152,41 @@ def root(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-if __name__ == "__main__":
+@app.post("/v1/audio/transcriptions")
+async def create_transcription(
+    file: UploadFile = File(...),
+    model: str = "whisper-1",
+    language: str = None,
+    prompt: str = None,
+    response_format: str = "json",
+    temperature: float = 0.0,
+    timestamp_granularities: list = ["segment"],
+):
+    if model != "whisper-1":
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid model specified. Only 'whisper-1' is currently supported.",
+        )
 
+    if response_format not in ["json", "text", "srt", "verbose_json", "vtt"]:
+        raise HTTPException(
+            status_code=400, detail="Invalid response format specified."
+        )
+
+    if response_format == "verbose_json" and "word" not in timestamp_granularities:
+        raise HTTPException(
+            status_code=400, detail="Word-level timestamps are not supported."
+        )
+
+    try:
+        audio_bytes = await file.read()
+        result = pipe(audio_bytes, language=language, prompt=prompt)
+        transcript = result["text"]
+        return transcript
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
