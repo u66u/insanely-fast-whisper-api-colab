@@ -1,4 +1,5 @@
 import os
+import gdown
 import uvicorn
 from fastapi import (
     FastAPI,
@@ -118,7 +119,6 @@ def root(
             status_code=400, detail="Webhook is required for async tasks"
         )
 
-    url = mic_file
     try:
         if is_async is True:
             background_tasks.add_task(
@@ -173,12 +173,13 @@ async def create_transcription(
 
     try:
         filename = os.path.basename(file)
-        audio_path = f"/content/drive/My Drive/transcribe/{filename}"
+        url = f"https://drive.google.com/uc?id={prompt}"
+        file = gdown.download(url, filename)
 
-        if not os.path.isfile(audio_path):
-            raise HTTPException(status_code=400, detail="Audio file not found.")
+        # if not os.path.isfile(audio_path):
+        #     raise HTTPException(status_code=400, detail="Audio file not found.")
 
-        with open(audio_path, "rb") as audio_file:
+        with open(file, "rb") as audio_file:
             audio_bytes = audio_file.read()
 
         result = pipe(
